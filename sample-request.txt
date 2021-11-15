@@ -1,0 +1,11 @@
+curl --request GET \
+  --url https://api.spotify.com/v1/audio-features \
+  --header 'Authorization: ' \
+  --header 'Content-Type: application/json'
+
+## to Python
+
+import subprocess
+proc = subprocess.Popen(["curl", "--head", "www.google.com"], stdout=subprocess.PIPE)
+(out, err) = proc.communicate()
+print out
