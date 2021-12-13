@@ -1,22 +1,17 @@
 import requests
 import json
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
 
-# Authentication + paths
-token = input("Enter active Spotify API Token: ")
+auth_manager = SpotifyClientCredentials()
+sp = spotipy.Spotify(auth_manager=auth_manager)
 
-seed_genre = "blues"
-track_count = 1000
-track_url = 'https://api.spotify.com/v1/recommendations?' + 'seed_genres=' + seed_genre + "&limit=100"
+genre = "show-tunes"
+track_count = 500
 
-data_path = "C:/Users/athor/Documents/git/SpotifyClassifier/Tracklists/"
-data_file = seed_genre + ".json"
+data_path = "C:/Users/athor/Documents/git/SpotifyClassifier/TracklistsFull/"
+data_file = genre + ".json"
 data_fullpath = data_path + data_file
-
-# Construct Spotify API query
-headers = {
-    'Authorization': 'Bearer '+ token,
-    'Content-type': 'application/json',
-}
 
 count = 0
 nothing_new = 0
@@ -25,7 +20,7 @@ tracks = {}
 while count < track_count and nothing_new<20:
     # Query Spotify API
     try:
-        response = requests.get(track_url, headers=headers).json()
+        response = sp.recommendations(seed_genres=[genre],limit=100)
     except:
         pass
     
