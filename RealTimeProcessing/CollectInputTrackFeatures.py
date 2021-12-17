@@ -4,6 +4,9 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import os
 import json
 import numpy as np
+import pandas as pd
+from pyspark.sql import SparkSession
+from pyspark.ml import PipelineModel
 
 os.environ['SPOTIPY_CLIENT_ID'] = '54453840737d4ec5812c403550b7a8c8'
 os.environ['SPOTIPY_CLIENT_SECRET'] = '92f637c6155e4e568175acff3255c2c5'
@@ -58,9 +61,41 @@ with open("C:/Users/athor/Documents/git/SpotifyClassifier/data/track_data.json",
     json.dump(track_features, f, indent=4)
 
 ### CONVERT TRACK_FEATURES TO VECTORIZED FORM
+with open('C:/Users/athor/Documents/git/SpotifyClassifier/data/track_data.json') as json_file:
+    data = json.load(json_file)
+
+features = [[data['id'], data["super-genre-label"], data["subgenre-label"], data["danceability"], data['energy'],
+                                      data['loudness'], data['mode'], data['speechiness'], data['acousticness'],
+                                      data['instrumentalness'], data['liveness'], data['valence'],
+                                      data['tempo'], data['time_signature'], data["popularity"], data["avg_pitches"],
+                                      data["avg_timbre"]]]
+
+dataframe = pd.DataFrame(features, columns=['id', 'super-genre', 'subgenre', 'danceability', 'energy',
+                                          'loudness', 'mode', 'speechiness', 'acousticness',
+                                          'instrumentalness', 'liveness', 'valence',
+                                          'tempo', 'time_signature', 'popularity', 'avg_pitches', 'avg_timbre'])
+
+split_df = pd.DataFrame(list(dataframe['avg_pitches']), columns=["pitch" + str(i) for i in range(12)])
+dataframe = pd.concat([dataframe, split_df], axis=1)
+dataframe = dataframe.drop('avg_pitches', axis=1)
+
+split_df = pd.DataFrame(list(dataframe['avg_timbre']), columns=["timbre" + str(i) for i in range(12)])
+dataframe = pd.concat([dataframe, split_df], axis=1)
+dataframe = dataframe.drop('avg_timbre', axis=1)
+
+spark = SparkSession.builder.master('yarn').appName('data-processing').getOrCreate()
+sparkDF = spark.createDataFrame(dataframe) 
 
 ### LOAD TRAINED MODEL
+# load from local Model/model dir (the model is inside Model/model folder in project repo) 
+pipelineModel = PipelineModel.load("../Model/model")
 
 ### CLASSIFY SONG
+sparkDF = pipelineModel.transform(sparkDF)
+sparkDF.select("prediction").show()
+label_mapping = ['dance', 'pop', 'alternative', 'rock', 'hardcore', 'latin', 'country', 'jazz', 'classical', 'musical']
+row_list = sparkDF.select("prediction").collect()
+pred = [ int(row.prediction) for row in row_list]
 
 ### SEND OUTPUT BACK TO FRONT END
+predicted_genre_str = label_mapping[pred[0]]
