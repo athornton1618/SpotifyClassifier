@@ -1,7 +1,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql import SQLContext
 from pyspark.ml import Pipeline
-from pyspark.ml.feature import VectorAssembler, StringIndexer
+from pyspark.ml.feature import VectorAssembler, StringIndexer, IndexToString
 from pyspark.ml.classification import OneVsRest
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.ml.linalg import DenseVector
@@ -9,9 +9,9 @@ from pyspark.ml.classification import GBTClassifier
 
 if __name__ == '__main__':
     spark = SparkSession.builder.master('yarn').appName('data-processing').getOrCreate()
-    bucket = "audio-features-vectorized"
-    table = 'features.features_updated_pit_tim_cols'
+    table = 'features.ten_genres'
     # Load data from BigQuery.
+    bucket = "train_test_data_spotify"
     spark.conf.set('temporaryGcsBucket', bucket)
     sql_context = SQLContext(sparkContext=spark.sparkContext, sparkSession=spark)
     sparkDF = sql_context.read.format('bigquery') \
@@ -49,11 +49,40 @@ if __name__ == '__main__':
     print("Test Dataset Count: " + str(testData.count()))
 
     pipelineModel = pipeline.fit(trainingData)
-    predictions = pipelineModel.transform(testData)
+    predictions_train = pipelineModel.transform(trainingData)
 
-    predictions.select("prediction", "label", "features").show(10)
+    # Saving the data to BigQuery
+    predictions_train.write.format('bigquery') \
+    .option('table', 'features.predictions_train') \
+    .save()
+
+    predictions_test = pipelineModel.transform(testData)
+    predictions_train.write.format('bigquery') \
+    .option('table', 'features.predictions_test') \
+    .save()
+
+    predictions_train.select("prediction", "label", "features", "super_genre").show(10)
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
-    accuracy = evaluator.evaluate(predictions)
-    print("GBTClassifier Accuracy = %g" % (accuracy))
+    accuracy = evaluator.evaluate(predictions_train)
+    # print("GBTClassifier train Accuracy = %g" % (accuracy))
+    print('Train F1-Score ',   evaluator.evaluate(predictions_train, 
+                                      {evaluator.metricName: 'f1'}))
+    print('Train Precision ',  evaluator.evaluate(predictions_train,
+                                        {evaluator.metricName: 'weightedPrecision'}))
+    print('Train Recall ',     evaluator.evaluate(predictions_train, 
+                                        {evaluator.metricName: 'weightedRecall'}))
+    print('Train Accuracy ',   evaluator.evaluate(predictions_train, 
+                                      {evaluator.metricName: 'accuracy'}))
 
-    pipelineModel.save("gs://spotifyclassifier_model")
+    pipelineModel.save("gs://spotifyclassifier_model/model")
+
+    accuracy = evaluator.evaluate(predictions_test)
+    # print("GBTClassifier train Accuracy = %g" % (accuracy))
+    print('Test F1-Score ',   evaluator.evaluate(predictions_test, 
+                                      {evaluator.metricName: 'f1'}))
+    print('Test Precision ',  evaluator.evaluate(predictions_test,
+                                        {evaluator.metricName: 'weightedPrecision'}))
+    print('Test Recall ',     evaluator.evaluate(predictions_test, 
+                                        {evaluator.metricName: 'weightedRecall'}))
+    print('Test Accuracy ',   evaluator.evaluate(predictions_test, 
+                                      {evaluator.metricName: 'accuracy'}))
