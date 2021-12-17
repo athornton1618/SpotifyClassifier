@@ -83,7 +83,7 @@ split_df = pd.DataFrame(list(dataframe['avg_timbre']), columns=["timbre" + str(i
 dataframe = pd.concat([dataframe, split_df], axis=1)
 dataframe = dataframe.drop('avg_timbre', axis=1)
 
-spark = SparkSession.builder.master('yarn').appName('data-processing').getOrCreate()
+spark = SparkSession.builder.master('local[*]').appName('data-processing').getOrCreate()
 sparkDF = spark.createDataFrame(dataframe) 
 
 ### LOAD TRAINED MODEL
