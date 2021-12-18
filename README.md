@@ -38,6 +38,27 @@ Music genre classification is a complex task, which can even be difficult for hu
   <img src=https://github.com/athornton1618/SpotifyClassifier/blob/main/Documentation/SystemArchitecture.png width="650"> 
 <p/>
 
+## Performance
+
+<p align="center">
+  <img src=https://github.com/athornton1618/SpotifyClassifier/blob/main/Documentation/confusion.PNG width="400">
+<p/>
+
+### Tested models
+* Random Forest Classifier. Accuracy: 0.4765
+* Decision Tree Classifier. Accuracy: 0.4156
+* Logistic Regression. Accuracy: 0.5518
+* LinearSVC. Accuracy: 0.4796
+* GBT Classifier Accuracy: 0.6223
+### GBT results
+* Test set F1-Score: 0.6217
+* Test set Precision: 0.6238
+* Test set Recall:  0.6223
+* Test set Accuracy: 0.6223
+### Comparison to Human Performance
+As a benchmark, human accuracy averages around 70% for this kind of genre classification work [1].
+
+
 ## Analysis
 * Maybe 'super-genre' hierarchy model was an oversimplification
 
@@ -63,6 +84,9 @@ Music genre classification is a complex task, which can even be difficult for hu
   <img src=https://github.com/athornton1618/SpotifyClassifier/blob/main/Documentation/TopOffenders.png >
 <p/>
 
+## References
+1. Mingwen Dong. Convolutional neural network achieves human-level accuracy in music genre classification. CoRR, abs/1802.09697, 2018.
+
 ## Thank You
 Copyright (c) 2021 Alex Thornton
 
@@ -83,4 +107,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
 
