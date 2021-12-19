@@ -57,7 +57,7 @@ if __name__ == '__main__':
     .save()
 
     predictions_test = pipelineModel.transform(testData)
-    predictions_train.write.format('bigquery') \
+    predictions_test.write.format('bigquery') \
     .option('table', 'features.predictions_test') \
     .save()
 
