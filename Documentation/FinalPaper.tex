@@ -1,0 +1,127 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{lettrine}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{SpotifyClassifier: Music Genre Classification with Big Data\\
+}
+
+\author{\IEEEauthorblockN{1\textsuperscript{st} Alex Thornton}
+\IEEEauthorblockA{\textit{Dept. of Electrical Engineering} \\
+\textit{Columbia University}\\
+New York, USA \\
+apt2141@columbia.edu}
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} Elmira Aliyeva}
+\IEEEauthorblockA{\textit{Dept. of Computer Science} \\
+\textit{Columbia University}\\
+New York, USA \\
+ae2970@columbia.edu}
+\and
+\IEEEauthorblockN{3\textsuperscript{rd} Tanvi Pande}
+\IEEEauthorblockA{\textit{Dept. of Computer Science} \\
+\textit{Columbia University}\\
+New York, USA \\
+tp2673@columbia.edu}
+}
+
+\maketitle
+\begin{abstract}
+Music genre classification is a complex task, which can even be difficult for humans. Using a Spotify Developer account to interface with their API, we have created our own dataset and a music genre classifier capable of identifying song genres across a much larger range of genres and subgenres than previously achieved in academic research. Additionally, we leverage Spotify's pre-processed track metadata, allowing for genre classification with only a song name as an input, rather than an audio mp3 file.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Music, Classification, Hierarchal Learning, Machine Learning, Big Data Analytics, Supervised Learning
+\end{IEEEkeywords}
+
+\section{Introduction}
+\lettrine{E}{ach} December 1\textsuperscript{st}, social media explodes with a "Spotify Wrapped" summary of users' preferences over the past year. Individual users can post to Instagram or Tik Tok about their top artists, tracks, genres, as well as more abstract concepts like music aura. Currently, Spotify's API can only provide genre labels for artists, not specific tracks. Our team has combined the power of the Spotify Developer API with big data tools such as Google Cloud Computing, Apache Spark, and machine learning techniques to solve this problem. 
+
+Considering the widespread interest and proliferation of "Spotify Wrapped" posts in 2021, there is a clear business value for being able to predict the genre tastes of individual users, particularly their favorite songs. However, Spotify providing genre labels for only artists does not provide enough granularity. Consider the example of a listener of Taylor Swift enjoying \emph{Trouble (Taylor's Version)} on her 2021 re-release of her popular album \emph{Red (Taylor's Version)}. What genre would this song be classified as? Spotify might be able to point you to an array of genres that Taylor Swift has performed over her career, but this is a very broad list! Entire albums across her discography vary greatly tonally, lyrically, and musically. Figure 1 illustrates the vast difference between \emph{Red (Taylor's Version) (2021)} and \emph{Reputation (2017)}.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=9cm]{images/TSwiftie.png}}
+\caption{Red (Taylor's Version) vs. Reputation}
+\label{fig}
+\end{figure}
+
+We suspect that on their application backend, Spotify has genre classifications for individual tracks. However, they are likely not providing all their information publicly, and are treating some subset of their data as trade secret. This suspicion is further supported by "Spotify Wrapped" including genres that are not supported for their Developer API. Spofity only supports 126 genres with their Developer API, but have been known to classify music into over 1,300 micro-genres like "grave-wave" and "metropolis" \cite{b1}. To uncover some of the magic of Spotify's classification algorithms, we built our own dataset of labelled tracks using their 'recommendation' feature, and used machine learning to reverse engineer a classification algorithm of our own. 
+
+\section{Related Work}
+
+Starting in 2002,  G. Tzanetakis and P. Cook attempted to use k-nearest neighbors models to perform genre classification on 3 broad genre sets, with an accuracy of around 61\% \cite{b2}. A more recent academic project out of Stanford's CS229 Machine Learning class was able to increase this amount to 80\% for 10 genres, using a CNN trained on the Short Time Fourier Transform (STFT) of song mp3 files from the publicly available GTZAN dataset of 1000 songs \cite{b3}. These examples are able to achieve decent accuracy, as human performance on classification across this range of high level genres is usually around 70\% \cite{b4}.
+
+A more interesting application also comes out of Stanford's CS229 Machine Learning class was able to classify across 4 distinct genres (Christian, Country, Jazz, Metal) by processing the album art, lyrics, and a small audio sample of songs, which they procured using the Spotify Developer API. Processed features were then fed through a recurrent neural network (RNN), Naive Bayes, and other models to achieve over 90\% accuracy. While this is excellent accuracy, the genre selection they used isn't very useful or broad.
+
+Suppose that a user wants to classify the genre of a specific track, but doesn't have access to an mp3 file. The previous examples would be useful if a large enough dataset of mp3 files was labelled, and the user would always have a copy of the music they want to classify. However, the very existence of Spotify as a streaming service indicates a growing movement to separate users from the actual data itself, as opposed to audio marketplace and storage solutions of the early 2000's like iTunes. A much more likely scenario would be a use case where a user knows the name of a track they want to classify, but don't actually own or possess a copy of the music. A clunky implementation for this use case might scrape YouTube and illegally convert the audio to a mp3, then run the raw data through one of the previously mentioned genre classification models. While this might suffice for a proof of concept, we prefer to do things by the book.
+
+Our method embraces big data and the plethora of publicly available metadata through the Spotify Developer API, and can fetch metadata and classify based on the name of a track alone. While genre classification itself isn't a novel application of machine learning, this use case is. Using the Spotify API, our team built our own dataset that leverages over 30,000 individual songs, from 73 distinct genres, and ambitiously has set out to classify genres using this broader, big data approach.
+
+\section{Data}
+
+\section{Methods}
+
+\subsection{System Overview}
+
+\subsection{Analysis}
+
+\subsection{Conclusion}
+One of the unique aspects of Spotify's Developer API is its 'recommendation' feature, which can be used to find music that matches a number of criteria, including genres. As of December 2021, Spotify supports a total of 126 genres for recommendation. 
+
+Our system uses the Spotify Developer API both to collect song recommendations for specific genres, as well as to collect pre-processed features of the audio. Available audio features include scores for abstract concepts like 'danceability' to more concrete, quantitative values like tempo and loudness. By repeatedly querying Spotify for specific genres, and collecting unique song IDs, we were able to build our own dataset of over 50 genres, with song features saved in a json file for each track. This data is stored in Google Cloud Storage for our project, and is being used to train several supervised machine learning models for classification. A diagram of this architecture is shown in Figure 1, with backend scripts in green, cloud storage in blue, and the end user application in purple.
+
+\subsection{Genre Hierarchy}
+With a class of genres so large, we clustered like genres as subgenres under larger 'super-genres'. For example, grunge, emo, and indie would all be subgenres of the alternative super-genre. Our system will classify based on both subgenre and super-genre, and we anticipate performance to be higher for the latter. An important distinction is that some subgenres could fall under multiple super-genres, like punk-rock being split across alternative and rock. For simplification, we mapped each subgenre to only one super-genre. The super-genre hierarchy used is shown in Figure 2, displayed as a sunburst diagram with subgenres branching radially from their respective super-genre. Additionally, the scale of the diagram is accurate for relative track count between genres within our dataset. The number of samples per subgenre, and number of subgenres per super-genre were carefully selected to create as balanced a dataset as possible.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=8cm]{images/GenreHierarchy.PNG}}
+\caption{Super-genre Hierarchy}
+\label{fig}
+\end{figure}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=10cm]{images/SupergenreGraphSquare.PNG}}
+\caption{Subgenre overlap visualization}
+\label{fig}
+\end{figure}
+
+\begin{figure*}
+  \includegraphics[width=\textwidth]{images/SystemArchitecture.png}
+  \caption{System architecture}
+  \label{fig}
+\end{figure*}
+
+\section{Novel Dataset}
+\subsection{Data Collection}
+ALEX DO
+
+\subsection{Data Processing}
+Individual track audio features are essentially scores for various metrics, and stored as doubles. After querying Spotify for these features, a json file is returned containing the data. Using Google Cloud and python, we extracted the most relevant features, and converted them to a DataFrame.
+
+Currently there are 22234 songs’ data gathered from the Spotify Developer API. The features picked for the prediction are 'danceability', 'energy', 'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence',  'tempo', 'time\_signature'. All of them are numerical values. Most of the song features range from 0 to 1, but some are not, for example, loudness, which has values that range between -45.393 and 1.342 (db). Some descriptive statistics for some of these features are shown in Figure 3.
+
+In addition to the pre-processed features, Spotify can also provide analysis vectors for selected tracks. Timbre and pitch frequencies may also serve to increase our model performance, and further distinguish genres. Individual segments of songs are processed by Spotify using convolutional filters against frequency representations of the songs, as shown in Figures 4 and 5. 
+
+
+
+\begin{thebibliography}{00}
+\bibitem{b1} N. Patch, Meet the man classifying every genre of music on Spotify,
+thestar.com. 2016.
+\bibitem{b2} G. Tzanetakis and P. Cook. Musical genre classification of audio signals. IEEE Transactions on Speech and Audio Processing, 10(5):293–302, July 2002.
+\bibitem{b3} D. Huang, A. Serafini, E. Pugh, \emph{Music Genre Classification}, 2018, Accessed on December 21, 2021. [Online]. Available: \url{http://cs229.stanford.edu/proj2018/report/21.pdf}
+\bibitem{b4} Mingwen Dong. Convolutional neural network achieves human-level accuracy in music genre classification. CoRR, abs/1802.09697, 2018.
+\bibitem{b5} T. Dammann, K. Haugh, \emph{Genre Classification of Spotify Songs using Lyrics, Audio Previews, and Album Artwork}, 2017, Stanford University
+
+\end{thebibliography}
+
+\end{document}
