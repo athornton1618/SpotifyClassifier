@@ -57,11 +57,11 @@ if __name__ == '__main__':
     predictions_test.select("prediction", "label", "features", "super_genre").show(10)
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
     accuracy = evaluator.evaluate(predictions_test)
-    print('Train F1-Score ',   evaluator.evaluate(predictions_test, 
+    print('Test F1-Score ',   evaluator.evaluate(predictions_test, 
                                       {evaluator.metricName: 'f1'}))
-    print('Train Precision ',  evaluator.evaluate(predictions_test,
+    print('Test Precision ',  evaluator.evaluate(predictions_test,
                                         {evaluator.metricName: 'weightedPrecision'}))
-    print('Train Recall ',     evaluator.evaluate(predictions_test, 
+    print('Test Recall ',     evaluator.evaluate(predictions_test, 
                                         {evaluator.metricName: 'weightedRecall'}))
-    print('Train Accuracy ',   evaluator.evaluate(predictions_test, 
+    print('Test Accuracy ',   evaluator.evaluate(predictions_test, 
                                       {evaluator.metricName: 'accuracy'}))
