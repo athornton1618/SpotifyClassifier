@@ -65,7 +65,7 @@ We suspect that on their application backend, Spotify has genre classifications 
 
 Starting in 2002,  G. Tzanetakis and P. Cook attempted to use k-nearest neighbors models to perform genre classification on 3 broad genre sets, with an accuracy of around 61\% \cite{b2}. A more recent academic project out of Stanford's CS229 Machine Learning class was able to increase this amount to 80\% for 10 genres, using a CNN trained on the Short Time Fourier Transform (STFT) of song mp3 files from the publicly available GTZAN dataset of 1000 songs \cite{b3}. These examples are able to achieve decent accuracy, as human performance on classification across this range of high level genres is usually around 70\% \cite{b4}.
 
-A more interesting application also comes out of Stanford's CS229 Machine Learning class was able to classify across 4 distinct genres (Christian, Country, Jazz, Metal) by processing the album art, lyrics, and a small audio sample of songs, which they procured using the Spotify Developer API. Processed features were then fed through a recurrent neural network (RNN), Naive Bayes, and other models to achieve over 90\% accuracy. While this is excellent accuracy, the genre selection they used isn't very useful or broad.
+A more interesting application also comes out of Stanford's CS229 Machine Learning class was able to classify across 4 distinct genres (Christian, Country, Jazz, Metal) by processing the album art, lyrics, and a small audio sample of songs, which they procured using the Spotify Developer API. Processed features were then fed through a recurrent neural network (RNN), Naive Bayes, and other models to achieve over 90\% accuracy \cite{b5}. While this is excellent accuracy, the genre selection they used isn't very useful or broad.
 
 Suppose that a user wants to classify the genre of a specific track, but doesn't have access to an mp3 file. The previous examples would be useful if a large enough dataset of mp3 files was labelled, and the user would always have a copy of the music they want to classify. However, the very existence of Spotify as a streaming service indicates a growing movement to separate users from the actual data itself, as opposed to audio marketplace and storage solutions of the early 2000's like iTunes. A much more likely scenario would be a use case where a user knows the name of a track they want to classify, but don't actually own or possess a copy of the music. A clunky implementation for this use case might scrape YouTube and illegally convert the audio to a mp3, then run the raw data through one of the previously mentioned genre classification models. While this might suffice for a proof of concept, we prefer to do things by the book.
 
@@ -77,7 +77,7 @@ One of the unique aspects of Spotify's Developer API is its 'recommendation' fea
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=9cm]{images/pitch.png}}
-\caption{Audio filter for pitch vectorization}
+\caption{Audio filter for pitch vectorization \cite{b6}}
 \label{fig:pitch}
 \end{figure}
 
@@ -85,7 +85,7 @@ After tracks were collected and organized with genre labels, we went back to Spo
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=9cm]{images/timbre.png}}
-\caption{Timbre basis function}
+\caption{Timbre basis function \cite{b6}}
 \label{fig:timbre}
 \end{figure}
 
@@ -167,7 +167,7 @@ After prepping the features by track for our new dataset, we used it to train a 
 \subsection{Final Model Performance}
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=8cm]{images/TrainingConfusion.PNG}}
-\caption{Training Confusion Matrix}
+\caption{Training confusion matrix}
 \label{fig:TrainingConfusion}
 \end{figure}
 
@@ -175,12 +175,11 @@ As anticipated, the super-genre hierarchy simplification to organize our dataset
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=8cm]{images/TestConfusion.PNG}}
-\caption{Test Confusion Matrix}
+\caption{Test confusion matrix}
 \label{fig:TestConfusion}
 \end{figure}
 
 \section{Analysis}
-\subgenre{Re-Framing the Problem}
 As previously mentioned, using the super-genre hierarchy described in Figure \ref{fig:GenreHierarchy} has its limitations. Clearly, there are some super-genres that are closely related and difficult to distinguish. But an important observation is that the super-genre labels were created by us, Spotify only provided the subgenre labels. Perhaps we oversimplified a complex relationship between the subgenres by grouping them under one definitive super-genre. Consider the example of a song classified as punk-rock. Would this song be classified under 'alternative' or 'rock' with our model? Either label is sufficient, but only one is 'correct' under our model, which is an oversimplification for sure. We predicted that a better model for grouping the subgenres would look something like Figure \ref{fig:NaiveOverlap}, with clusters of super-genres connected together by borderline subgenres.
 
 \begin{figure}[htbp]
@@ -191,7 +190,7 @@ As previously mentioned, using the super-genre hierarchy described in Figure \re
 
 Re-framing the problem as a graph problem allows both for data analysis as well as new solutions. For example, the approach we took was to re-group subgenres or throw away 'unreliable' subgenres from the dataset. Another approach might look at determining some notion of edge weights between subgenre nodes in the graph, and updating our loss model for classification to be weighted vectors by subgenre connectivity instead of 'all or nothing' one-hot encoding. We determined a procedure (Algorithm II) for the latter, which we describe in the Future Works section, but leave its implementation as an exercise for the reader.
 
-\subsection{Search for Subgenre Interconnectivity}
+\subsection{Search for Subgenre Inter-Connectivity}
 Out of the 73 genre seeds we derived our dataset from, some provide more information than others. For instance, tracks with the 'opera' subgenre label were hardly ever categorized as anything other than the 'classical' super-genre, so that label provides high information. A traditional way to think about the information provided by each subgenre would be to frame the supergenre as an unbiased estimator of a subgenre random variable as a function of the track features, and to determine the Fisher Information of each label. This isn't practical, because the subgenres are discrete and disjoint. Instead, we determined a new metric, \emph{Inter-Connectivity-Rank}, to compare how frequently specific subgenres overlap with other subgenres. Subgenres with a high \emph{Inter-Connectivity-Rank} are the most difficult to categorize into a single super-genre, and are therefore less reliable as labels. We expected that subgenres which had lower classification accuracy would show up at the top of this ranking.
 
 \subsection{What is this, a Crossover Episode?}
@@ -202,6 +201,14 @@ To find how to define this new metric, and establish a concrete algorithm to com
 \caption{Album art for tracks associated with multiple subgenres from Blink-182, Mumford \& Sons, and MGMT}
 \label{fig:Crossover}
 \end{figure}
+
+\subsection{The Inter-Connectivity-Rank Algorithm}
+After we collected a list of tracks that appeared in multiple subgenre lists, we set out to formulate the 
+\emph{Inter-Connectivity-Rank} for our dataset. For every track that was listed multiple times, we formed
+a 'cluster' of the subgenres that were associated with that track. From there, we determined how many 
+times that subgenre appeared in a cluster, and ranked them. Additionally, we calculated an edge matrix,
+with subgenres as the vertices, as a boolean if subgenre $i$ ever appeared in a cluster with subgenre $j$.
+The procedure for performing these operations is described in detail in Algorithm I.
 
 \begin{algorithm} 
 \textit{s := data structure of subgenres, with track features organized by subgenre}
@@ -221,7 +228,7 @@ To find how to define this new metric, and establish a concrete algorithm to com
 \STATE T.append (track-id, subgenre) 
 \ENDFOR
 \ENDFOR
-\STATE T $\gets$ (elements of T w/ $>$ 1 appearance of track-id)
+\STATE T $\gets$ (elements of T with $>$ 1 appearance of track-id)
 \STATE subgenre-clusters $\gets$ empty hash table
 \FOR{ all $t \in T$}
 \STATE subgenre-clusters[t[track-id]].append(t[subgenre])
@@ -242,17 +249,66 @@ To find how to define this new metric, and establish a concrete algorithm to com
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Conclusion}
+After computing the \emph{Inter-Connectivity-Rank} for each subgenre, we compiled a list of the top 10 most inter-connected subgenres, as shown in Figure \ref{fig:Ranking}. As anticipated, 'alternative', 'punk-rock', and 'rock-n-roll' all make an appearance. Surprisingly, 'chill', 'study', and 'sleep' round out the top 10. Interestingly, these three were all part of our 'easy-listening' super-genre. We determined that the easy-listening category was far too broad, and tossed it from the dataset, resulting in an accuracy improvement of a small percentage. 'Study' and 'Chill' aren't really genres, but verbs the user performs while listening to music of many genres. We probably wouldn't have come to this conclusion without doing this analysis, so we're convinced the \emph{Inter-Connectivity-Rank} is a useful metric for this type of analysis. 
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=9cm]{images/TopOffenders.png}}
+\caption{Top-10 inter-connected subgenres}
+\label{fig:Ranking}
+\end{figure}
+
+Other unsurprising offenders appearing in the top 10 are 'guitar', 'party', and 'acoustic'. These are definitely genres and not verbs like with the easy-listening subgenres, but they are incredibly vague. Guitar for example could easily be rock, alternative, hardcore, country, and pop. Surprising or 
+otherwise, we decided to toss these highly overlapping subgenres from the dataset. We included an updated 
+sunburst diagram in Figure \ref{fig:UpdatedHierarchy} to display our dataset after tossing the top 10 
+ranking subgenres.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=8cm]{images/UpdatedGenreHierarchy.PNG}}
+\caption{Updated super-genre hierarchy of subgenres}
+\label{fig:UpdatedHierarchy}
+\end{figure}
+
+\subsection{Inter-Connectivity Visualized}
+
+\begin{figure*}
+  \includegraphics[width=\textwidth]{images/Analysis.PNG}
+  \caption{True subgenre inter-connectivity structure}
+  \label{fig:Analysis}
+\end{figure*}
+
+In addition to a ranking of subgenres, the \emph{Inter-Connectivity-Rank} algorithm also returned
+the edge matrix defining edges between subgenres of the cross-labelled songs in our dataset. Using the
+networkx Python package, we were able to visualize the output of the algorithm as a graph, as seen
+in Figure \ref{fig:Analysis}. This is another way to see the \emph{Inter-Connectivity-Rank} of the 
+subgenres, and reveals the same information we saw before. It's unsurprising that subgenres like 
+'blues' and 'alternative' appear toward the center, with many edges. But the top offenders like
+'sleep' and 'chill' are also near the exact center as well. 
+
+The subgenres with the lowest \emph{Inter-Connectivity-Rank} are easier to see. 'Black-metal', 'latino', and 'k-pop' are clear outliers in the graph, with only one connection each. Some other subgenres from the hardcore supergenre also appeared completely unconnected to the rest of this graph entirely. This aligns
+with the results we saw in the Methods section, where the hardcore super-genre had very high accuracy.
+The connection between our graph here and the results seen by our model confirms that the subgenres with
+the lowest \emph{Inter-Connectivity-Rank} were the most distinguishing for classification, and therefore provided the most information as a label. 
+
+\section{Further Analysis \& Future Works}
+This project provided an excellent application as well as some interesting and novel analysis, but there still is quite a lot left to explore in this field that would make this project even better. Clearly, getting the front end shown in Figure \ref{fig:application} was a stretch goal for us, so that would be priority one in future work beyond this paper. But the possibilities go much further than getting Tanvi's Javascript app to cooperate with our model. 
+
+\subsection{Augmented Inter-Connectivity-Rank}
+At the start of the Analysis section, we teased a second, improved \emph{Inter-Connectivity-Rank} algorithm that would improve model performance and serve as a more interesting visual. After thinking about our Algorithm I, which produced the \emph{Inter-Connectivity-Ranking} and Figure \ref{fig:Analysis}, we determined that there might be some information lost in translation given the way we were processing the repeated tracks. Consider the edge case that 'salsa' is cross listed with 'dance' very frequently, but never cross listed with any other subgenres. Given Algorithm I, it could happen that 'salsa' and 'dance' could emerge at the top of the ranking, despite only ever being linked with each other! 
+
+In Algorithm I for \emph{Inter-Connectivity-Ranking}, we computed the ranking based on the number of cross-listed track subgenre clusters each subgenre appears in. But as pointed out in the edge case, this is biased for subgenres that are frequently coupled with a small group of subgenres. Even if 'emo' and 'goth' are often cross listed with each other, they share the parent super-genre 'alternative', so their high correlation doesn't impact the information we can derive. A better algorithm would be able to differentiate subgenres based not on the number of collisions, or cross-correlations with any subgenre, but the number of unique collisions. This would be the number of unique outgoing edges for each subgenre from the $E$ matrix derived in Algorithm I! 
+
+\section{Conclusion}
 
 
 
-
+\pagebreak
 \begin{thebibliography}{00}
 \bibitem{b1} N. Patch, Meet the man classifying every genre of music on Spotify, thestar.com. 2016.
 \bibitem{b2} G. Tzanetakis and P. Cook. Musical genre classification of audio signals. IEEE Transactions on Speech and Audio Processing, 10(5):293–302, July 2002.
 \bibitem{b3} D. Huang, A. Serafini, E. Pugh, \emph{Music Genre Classification}, 2018, Accessed on December 21, 2021. [Online]. Available: \url{http://cs229.stanford.edu/proj2018/report/21.pdf}
 \bibitem{b4} Mingwen Dong. Convolutional neural network achieves human-level accuracy in music genre classification. CoRR, abs/1802.09697, 2018.
 \bibitem{b5} T. Dammann, K. Haugh, \emph{Genre Classification of Spotify Songs using Lyrics, Audio Previews, and Album Artwork}, 2017, Stanford University
+\bibitem{b6} Spotify Developer API Documentation - Track Audio Analysis, Accessed on December 21, 2021. [Online]. Available: \url{ https://developer.spotify.com/documentation/web-api/reference/#/operations/get-audio-analysis}
 
 \end{thebibliography}
 
@@ -263,10 +319,15 @@ Album artwork referenced for Taylor Swift, Blink-182, Mumford \& Sons, and MGMT.
 To Taylor,
 \newline
 \newline
-Listening to your music while writing this paper at 2 am is what got us through. 
+Listening to your music while writing this paper at 2 A.M. 
+is what got me through. 
 \newline
 \newline
 Thank you.
+\newline
+\newline
+-A
 
 \end{document}
+
 
