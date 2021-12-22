@@ -188,7 +188,7 @@ As previously mentioned, using the super-genre hierarchy described in Figure \re
 \label{fig:NaiveOverlap}
 \end{figure}
 
-Re-framing the problem as a graph problem allows both for data analysis as well as new solutions. For example, the approach we took was to re-group subgenres or throw away 'unreliable' subgenres from the dataset. Another approach might look at determining some notion of edge weights between subgenre nodes in the graph, and updating our loss model for classification to be weighted vectors by subgenre connectivity instead of 'all or nothing' one-hot encoding. We determined a procedure (Algorithm II) for the latter, which we describe in the Future Works section, but leave its implementation as an exercise for the reader.
+Re-framing the problem as a graph problem allows both for data analysis as well as new solutions. For example, the approach we took was to re-group subgenres or throw away 'unreliable' subgenres from the dataset. Another approach might look at determining some notion of edge weights between subgenre nodes in the graph, and updating our loss model for classification to be weighted vectors by subgenre connectivity instead of 'all or nothing' one-hot encoding. We determined a procedure (Algorithm 2) for the latter, which we describe in the Future Works section, but leave its implementation as an exercise for the reader.
 
 \subsection{Search for Subgenre Inter-Connectivity}
 Out of the 73 genre seeds we derived our dataset from, some provide more information than others. For instance, tracks with the 'opera' subgenre label were hardly ever categorized as anything other than the 'classical' super-genre, so that label provides high information. A traditional way to think about the information provided by each subgenre would be to frame the supergenre as an unbiased estimator of a subgenre random variable as a function of the track features, and to determine the Fisher Information of each label. This isn't practical, because the subgenres are discrete and disjoint. Instead, we determined a new metric, \emph{Inter-Connectivity-Rank}, to compare how frequently specific subgenres overlap with other subgenres. Subgenres with a high \emph{Inter-Connectivity-Rank} are the most difficult to categorize into a single super-genre, and are therefore less reliable as labels. We expected that subgenres which had lower classification accuracy would show up at the top of this ranking.
@@ -208,14 +208,14 @@ After we collected a list of tracks that appeared in multiple subgenre lists, we
 a 'cluster' of the subgenres that were associated with that track. From there, we determined how many 
 times that subgenre appeared in a cluster, and ranked them. Additionally, we calculated an edge matrix,
 with subgenres as the vertices, as a boolean if subgenre $i$ ever appeared in a cluster with subgenre $j$.
-The procedure for performing these operations is described in detail in Algorithm I.
+The procedure for performing these operations is described in detail in Algorithm 1.
 
 \begin{algorithm} 
-\textit{s := data structure of subgenres, with track features organized by subgenre}
+\textit{S := data structure of subgenres, with track features organized by subgenre}
 \newline
 \textit{I := sorted dictionary of interconnectivity rank by subgenre}
 \newline
-\textit{E := edge boolean for subgenre pairings}
+\textit{E := boolean edge matrix for all subgenres}
 \newline
 \textt{ (I,E) = Inter-Connectivity-Rank(s)}
 \newline
@@ -289,16 +289,120 @@ with the results we saw in the Methods section, where the hardcore super-genre h
 The connection between our graph here and the results seen by our model confirms that the subgenres with
 the lowest \emph{Inter-Connectivity-Rank} were the most distinguishing for classification, and therefore provided the most information as a label. 
 
-\section{Further Analysis \& Future Works}
+\section{But Wait - There's More}
 This project provided an excellent application as well as some interesting and novel analysis, but there still is quite a lot left to explore in this field that would make this project even better. Clearly, getting the front end shown in Figure \ref{fig:application} was a stretch goal for us, so that would be priority one in future work beyond this paper. But the possibilities go much further than getting Tanvi's Javascript app to cooperate with our model. 
 
-\subsection{Augmented Inter-Connectivity-Rank}
-At the start of the Analysis section, we teased a second, improved \emph{Inter-Connectivity-Rank} algorithm that would improve model performance and serve as a more interesting visual. After thinking about our Algorithm I, which produced the \emph{Inter-Connectivity-Ranking} and Figure \ref{fig:Analysis}, we determined that there might be some information lost in translation given the way we were processing the repeated tracks. Consider the edge case that 'salsa' is cross listed with 'dance' very frequently, but never cross listed with any other subgenres. Given Algorithm I, it could happen that 'salsa' and 'dance' could emerge at the top of the ranking, despite only ever being linked with each other! 
+\subsection{Improved Inter-Connectivity-Rank Algorithm}
+At the start of the Analysis section, we teased a second, improved \emph{Inter-Connectivity-Rank} algorithm that would improve model performance and serve as a more interesting visual. After thinking about our Algorithm 1, which produced the \emph{Inter-Connectivity-Ranking} and Figure \ref{fig:Analysis}, we determined that there might be some information lost in translation given the way we were processing the repeated tracks. Consider the edge case that 'salsa' is cross listed with 'dance' very frequently, but never cross listed with any other subgenres. Given Algorithm 1, it could happen that 'salsa' and 'dance' could emerge at the top of the ranking, despite only ever being linked with each other! 
 
-In Algorithm I for \emph{Inter-Connectivity-Ranking}, we computed the ranking based on the number of cross-listed track subgenre clusters each subgenre appears in. But as pointed out in the edge case, this is biased for subgenres that are frequently coupled with a small group of subgenres. Even if 'emo' and 'goth' are often cross listed with each other, they share the parent super-genre 'alternative', so their high correlation doesn't impact the information we can derive. A better algorithm would be able to differentiate subgenres based not on the number of collisions, or cross-correlations with any subgenre, but the number of unique collisions. This would be the number of unique outgoing edges for each subgenre from the $E$ matrix derived in Algorithm I! 
+In Algorithm 1 for \emph{Inter-Connectivity-Ranking}, we computed the ranking based on the number of cross-listed track subgenre clusters each subgenre appears in. But as pointed out in the edge case, this is biased for subgenres that are frequently coupled with a small group of subgenres. Even if 'emo' and 'goth' are often cross listed with each other, they share the parent super-genre 'alternative', so their high correlation doesn't impact the information we can derive. A better algorithm would be able to differentiate subgenres based not on the number of collisions, or cross-correlations with any subgenre, but the number of unique collisions. This can be computed as the number of unique outgoing edges for each subgenre from the $E$ matrix derived in Algorithm 1.
+
+Another way to improve Algorithm 1 would be to better define the edges in the produced graph structure. Previously, we defined the edge matrix as boolean, so if a collision between two subgenres appeared only once in all the cross-listed tracks, it would count the same as a collision between two subgenres appearing one thousand times. It might be useful to track the number occurrence's each edge gets counted, so an improved algorithm would track that as well. The layout for Algorithm 2 is provided below.
+
+\begin{algorithm} 
+\textit{S := data structure of subgenres, with track features organized by subgenre}
+\newline
+\textit{I := sorted dictionary of interconnectivity rank by subgenre}
+\newline
+\textit{E := boolean edge matrix for all subgenres}
+\newline
+\textt{ (I,E) = Improved-Inter-Connectivity-Rank(s)}
+\newline
+\begin{algorithmic}[H]
+\caption{Improved-Inter-Connectivity-Rank}
+\STATE I $\gets$ dictionary of zero for all subgenres
+\STATE T $\gets$ empty list
+\FOR{all $s \in S$}
+\FOR{all track-id in s}
+\STATE T.append (track-id, subgenre) 
+\ENDFOR
+\ENDFOR
+\STATE T $\gets$ (elements of T with $>$ 1 appearance of track-id)
+\STATE subgenre-clusters $\gets$ empty hash table
+\FOR{ all $t \in T$}
+\STATE subgenre-clusters[t[track-id]].append(t[subgenre])
+\ENDFOR
+\STATE E $\gets$ array of $0$ for all subgenres, dimension S x S
+\FOR{cluster in subgenre-clusters}
+\FOR{all pairs i,j of subgenres in cluster}
+\STATE E[i,j] += 1
+\ENDFOR
+\ENDFOR
+\FOR{all i in E[i,j]}
+\FOR{all j in E[i,j]}
+\IF{ E[i,j] $\geq$ 1}
+\STATE{I[s[i]] += 1}
+\ENDIF
+\ENDFOR
+\ENDFOR
+\STATE I = reverse-sort-by-value(I)
+\RETURN (E, I)
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Improved Label Encoding \& Loss Function}
+Not only will Algorithm 2 provide better data visualization, but we expect it to significantly improve model performance. Right now, labels for super-genres are one-hot encoded, so for a 5 super-genre subset of our data given by ['alternative', 'rock', 'hip-hop', 'jazz', 'country'], a valid representation for a track labelled 'rock' could be given by:
+
+\begin{figure}[ht]
+\centering
+$Y=
+\begin{bmatrix}
+0\\
+1\\
+0\\
+0\\
+0\\
+\end{bmatrix}
+$
+\end{figure}
+
+Consider how the edge matrix $E$ could help augment this. Perhaps there would be a count of 250 between 'alternative' and 'rock', and 50 between 'hip-hop' and 'rock', with the max element of $E$ being 500. We could normalize the edge counts relative to the maximum edge, and multiply by a factor $\alpha $ so that we could account for subgenre overlap, while not diluting the original label. 
+
+For example, let $\alpha=\frac{1}{2}$,
+
+\begin{figure}[ht]
+\centering
+$\hat{Y}=
+\begin{bmatrix}
+0+\alpha*\frac{250}{500}\\
+1\\
+0+\alpha*\frac{50}{500}\\
+0\\
+0\\
+\end{bmatrix}
+=
+\begin{bmatrix}
+\frac{1}{4}\\
+1\\
+\frac{1}{20}\\
+0\\
+0\\
+\end{bmatrix}
+\rightarrow
+\hat{Y_{normalized}} = 
+\begin{bmatrix}
+.192\\
+.769\\
+.039\\
+0\\
+0\\
+\end{bmatrix}
+$
+\end{figure}
+
+By using this as a new subgenre label, and using a mean square error loss function for training and accuracy metrics, we can account for subgenre overlap. Not only would this improve our accuracy in training and test, but would also allow us to make better genre predictions. Instead of our model delivering one genre prediction, it would instead output a normalized vector of genre ratios. This way, a track split across two or more super-genres could be represented correctly, rather than forced under one label.
+
+\subsection{Expanded Features}
+As mentioned in \emph{Related Work}, a music genre classifier from Stanford's CS229 class (that was also integrated into the Spotify Developer API) was able to use album art, lyrics, and a sample of audio as features for individual tracks \cite{b5}. From our experience, the availability of the audio snippets is spotty from genre to genre, often being unavailable for less popular genres. However, album art and lyrics are almost always available. Using a CNN to process features from album art, and a RNN language model for the lyrics could add two additional highly discriminatory features to each track, and improve model performance.
 
 \section{Conclusion}
+Every year, Big Data continues to make waves in all areas of society, and music is no exception. Just 10 years ago, streaming music was a radical idea, with a large market share of listeners relying on personal libraries of digital copies of their music. Spotify has likely permanently changed the music industry forever, ushering in the era of streaming, listener profiling, and AI informed music recommendation. 
 
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=8cm]{images/logo.png}}
+\caption{SpotifyClassifier Logo}
+\label{fig:logo}
+\end{figure}
 
 
 \pagebreak
@@ -316,7 +420,7 @@ In Algorithm I for \emph{Inter-Connectivity-Ranking}, we computed the ranking ba
 Album artwork referenced for Taylor Swift, Blink-182, Mumford \& Sons, and MGMT.
 \newline
 \newline
-To Taylor,
+To Taylor Swift,
 \newline
 \newline
 Listening to your music while writing this paper at 2 A.M. 
@@ -326,8 +430,6 @@ is what got me through.
 Thank you.
 \newline
 \newline
--A
+-Alex
 
 \end{document}
-
-
