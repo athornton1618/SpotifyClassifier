@@ -339,7 +339,7 @@ Another way to improve Algorithm 1 would be to better define the edges in the pr
 \RETURN (E, I)
 \end{algorithmic}
 \end{algorithm}
-
+\raggedbottom
 \subsection{Improved Label Encoding \& Loss Function}
 Not only will Algorithm 2 provide better data visualization, but we expect it to significantly improve model performance. Right now, labels for super-genres are one-hot encoded, so for a 5 super-genre subset of our data given by ['alternative', 'rock', 'hip-hop', 'jazz', 'country'], a valid representation for a track labelled 'rock' could be given by:
 
@@ -395,14 +395,24 @@ By using this as a new subgenre label, and using a mean square error loss functi
 \subsection{Expanded Features}
 As mentioned in \emph{Related Work}, a music genre classifier from Stanford's CS229 class (that was also integrated into the Spotify Developer API) was able to use album art, lyrics, and a sample of audio as features for individual tracks \cite{b5}. From our experience, the availability of the audio snippets is spotty from genre to genre, often being unavailable for less popular genres. However, album art and lyrics are almost always available. Using a CNN to process features from album art, and a RNN language model for the lyrics could add two additional highly discriminatory features to each track, and improve model performance.
 
+\pagebreak
 \section{Conclusion}
 Every year, Big Data continues to make waves in all areas of society, and music is no exception. Just 10 years ago, streaming music was a radical idea, with a large market share of listeners relying on personal libraries of digital copies of their music. Spotify has likely permanently changed the music industry forever, ushering in the era of streaming, listener profiling, and AI informed music recommendation. 
+
+We expect that AI will continue to transform the user experience for music streaming, and "Spotify Wrapped" is just the beginning in visually and audibly exciting data analytics to optimize the user experience. Our application likely only re-invented the wheel of some of the magic under the hood of the Spotify ML algorithms for music classification, but our novel approach to subgenre inter-connectivity provides a fresh take to improve any dataset with ambiguous and dependent labels, with implications far beyond the subset of music classification problems.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=8cm]{images/logo.png}}
 \caption{SpotifyClassifier Logo}
 \label{fig:logo}
 \end{figure}
+
+
+\pagebreak
+\section*{Thank You!}
+Thank you to Professor Ching-Yung Lin, and TA's Cong Han, Yvonne Lee, Guoshiwen Han, Yiwen Fang for your support throughout EECS E6983, and your ideas for this project.
+
+We appreciate you.
 
 
 \pagebreak
@@ -419,7 +429,7 @@ Every year, Big Data continues to make waves in all areas of society, and music 
 \section*{Acknowledgements}
 Album artwork referenced for Taylor Swift, Blink-182, Mumford \& Sons, and MGMT.
 \newline
-\newline
+\section*{One More Thing}
 To Taylor Swift,
 \newline
 \newline
@@ -433,3 +443,4 @@ Thank you.
 -Alex
 
 \end{document}
+
