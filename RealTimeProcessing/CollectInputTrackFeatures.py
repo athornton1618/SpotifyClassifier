@@ -8,8 +8,8 @@ import pandas as pd
 from pyspark.sql import SparkSession
 from pyspark.ml import PipelineModel
 
-os.environ['SPOTIPY_CLIENT_ID'] = '54453840737d4ec5812c403550b7a8c8'
-os.environ['SPOTIPY_CLIENT_SECRET'] = '92f637c6155e4e568175acff3255c2c5'
+os.environ['SPOTIPY_CLIENT_ID'] = 'SECRET'
+os.environ['SPOTIPY_CLIENT_SECRET'] = 'SECRET'
 
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())
 
