@@ -1,6 +1,8 @@
 # SpotifyClassifier
 EECS E6893 Research Project - Columbia University Fall 2021
 
+Watch the [VIDEO](https://www.youtube.com/watch?v=06_sNlUMzY0&t=17s) :tv: !
+
 <p align="center">
   <img src=https://github.com/athornton1618/SpotifyClassifier/blob/main/Documentation/logo.png width="300">
 <p/>
